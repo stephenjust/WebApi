@@ -132,6 +132,44 @@ namespace Microsoft.AspNet.OData.Test.Builder
             Assert.Equal(expectedNavigationLink, uri.AbsoluteUri);
         }
 
+        [Theory]
+        [InlineData(false, "http://localhost/MyNextOrder/OrderLines(21)/OrderLines")]
+        [InlineData(true, "http://localhost/MyNextOrder/OrderLines(21)/NS.OrderLine/OrderLines")]
+        public void GenerateNavigationLink_WorksToGenerateExpectedNavigationLink_ForContainedNavigationFromSingleton(
+            bool includeCast,
+            string expectedNavigationLink)
+        {
+            // NOTE: This test is generating a link that does not technically correspond to a valid model (specifically
+            //       the extra OrderLines navigation), but it allows us to validate the nested navigation scenario
+            //       without twisting the model unnecessarily.
+
+            // Arrange
+            IEdmSingleton singleton = _model.Model.FindDeclaredSingleton("MyNextOrder");
+            IEdmNavigationProperty orderLinesProperty = singleton.EntityType().NavigationProperties().Single(x => x.ContainsTarget);
+
+            IEdmEntitySet entitySet = _model.Model.FindDeclaredEntitySet("OrderLines");
+
+            IDictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                {"ID", 21}
+            };
+
+            ODataPath path = new ODataPath(
+                    new SingletonSegment(singleton),
+                    new NavigationPropertySegment(orderLinesProperty, _model.OrderLines),
+                    new KeySegment(parameters.ToArray(), _model.OrderLine, _model.OrderLines));
+
+            var request = RequestFactory.CreateFromModel(_model.Model);
+            var serializerContext = ODataSerializerContextFactory.Create(_model.Model, _model.OrderLines, path, request);
+            var entityContext = new ResourceContext(serializerContext, _model.OrderLine.AsReference(), new { ID = 21 });
+
+            // Act
+            Uri uri = entityContext.GenerateNavigationPropertyLink(orderLinesProperty, includeCast);
+
+            // Assert
+            Assert.Equal(expectedNavigationLink, uri.AbsoluteUri);
+        }
+
         [Fact]
         public void GenerateNavigationLink_WorksToGenerateExpectedNavigationLink_ForNonContainedNavigation()
         {

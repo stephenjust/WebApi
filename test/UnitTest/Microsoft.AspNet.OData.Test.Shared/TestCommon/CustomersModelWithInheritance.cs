@@ -127,6 +127,7 @@ namespace Microsoft.AspNet.OData.Test.Common
             EdmSingleton vipCustomer = container.AddSingleton("VipCustomer", customer);
             EdmSingleton mary = container.AddSingleton("Mary", customer);
             EdmSingleton rootOrder = container.AddSingleton("RootOrder", order);
+            EdmSingleton myNextOrder = container.AddSingleton("MyNextOrder", myOrder);
 
             // annotations
             model.SetOptimisticConcurrencyAnnotation(customers, new[] { city });
@@ -364,6 +365,7 @@ namespace Microsoft.AspNet.OData.Test.Common
             VipCustomer = vipCustomer;
             Mary = mary;
             RootOrder = rootOrder;
+            MyNextOrder = myNextOrder;
             OrderLine = orderLine;
             OrderLines = orderLines;
             NonContainedOrderLines = nonContainedOrderLines;
@@ -400,6 +402,8 @@ namespace Microsoft.AspNet.OData.Test.Common
         public EdmSingleton Mary { get; private set; }
 
         public EdmSingleton RootOrder { get; private set; }
+
+        public EdmSingleton MyNextOrder { get; private set; }
 
         public IEdmContainedEntitySet OrderLines { get; private set; }
 
